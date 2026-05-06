@@ -1,0 +1,7 @@
+{
+  "actor": "human:alice",
+  "subject": "agent:planner",
+  "event_type": "J",
+  "intent": {"task": "prepare accountable execution plan"},
+  "authority_scope": {"actions": ["plan"], "resources": ["case:001"]}
+}

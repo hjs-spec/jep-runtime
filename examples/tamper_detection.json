@@ -1,0 +1,3 @@
+{
+  "scenario": "Modify any archived event field after event_hash assignment; jep archive-verify reports event_hash mismatch."
+}
