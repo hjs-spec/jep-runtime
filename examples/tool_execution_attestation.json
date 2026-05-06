@@ -1,0 +1,7 @@
+{
+  "actor": "agent:worker",
+  "subject": "tool:reader",
+  "event_type": "J",
+  "intent": {"tool_call": "read case:001 metadata only"},
+  "authority_scope": {"actions": ["read"], "resources": ["case:001"]}
+}

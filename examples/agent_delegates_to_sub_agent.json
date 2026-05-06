@@ -1,0 +1,7 @@
+{
+  "actor": "agent:planner",
+  "subject": "agent:worker",
+  "event_type": "D",
+  "intent": {"delegation": "bounded sub-agent research"},
+  "authority_scope": {"actions": ["read"], "resources": ["case:001"]}
+}
