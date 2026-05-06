@@ -127,6 +127,7 @@ tests/                  # executable conformance/runtime tests
 
 - Replace `MockProfileAdapter` with production credential adapters.
 - Add signature suites while preserving the canonicalization boundary.
+- Add draft-version-specific schema adapters without changing the pinned v06 J/D/T/V primitive meaning.
 - Add draft-version-specific schema adapters without changing J/D/T/V primitive meaning.
 - Publish conformance vectors for independent implementations.
 - Add governance-specific validation modules outside the core minimal runtime.
