@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from jep_runtime.canonicalization.json import canonicalize_event, compute_event_hash
 from jep_runtime.core.event import EventType
-from jep_runtime.core.version import JEP_DRAFT_REFERENCE, JEP_DRAFT_REPOSITORY, JEP_DRAFT_VERSION, RUNTIME_VERSION
 from jep_runtime.delegation.runtime import delegate_authority, verify_delegation_chain
 from jep_runtime.events.factory import create_event
 from jep_runtime.profiles.adapter import MockProfileAdapter
@@ -46,10 +45,6 @@ def generate_test_vectors() -> dict:
         credential_reference=ref,
     )
     return {
-        "protocol_version": JEP_DRAFT_VERSION,
-        "protocol_reference": JEP_DRAFT_REFERENCE,
-        "protocol_repository": JEP_DRAFT_REPOSITORY,
-        "runtime_version": RUNTIME_VERSION,
         "events": [root.to_dict(), child.to_dict(), verify.to_dict()],
         "canonical_root": canonicalize_event(root).decode("utf-8"),
         "root_hash": root.event_hash,
@@ -68,9 +63,6 @@ def run_conformance() -> dict:
         "replay_correctness": replay_events(reconstructed)["valid"],
     }
     return {
-        "protocol_version": JEP_DRAFT_VERSION,
-        "protocol_reference": JEP_DRAFT_REFERENCE,
-        "runtime_version": RUNTIME_VERSION,
         "passed": all(matrix.values()),
         "matrix": matrix,
         "test_vectors": vectors,

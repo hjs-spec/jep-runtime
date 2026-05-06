@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 authors = [{name = "JEP Runtime Contributors"}]
 license = {text = "MIT"}
-keywords = ["JEP", "jep-v06", "accountability", "protocol", "runtime", "verification"]
+keywords = ["JEP", "accountability", "protocol", "runtime", "verification"]
 classifiers = ["Programming Language :: Python :: 3", "Topic :: Security :: Cryptography"]
 
 [project.scripts]

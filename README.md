@@ -1,14 +1,8 @@
 # JEP Reference Runtime
 
-`jep-runtime` is a runnable reference implementation for the Judgment Event Protocol (JEP). It currently targets **JEP Internet-Draft v06** (the `jep-v06` repository baseline). It turns the v06 JEP primitives — Judgment (`J`), Delegation (`D`), Termination (`T`), and Verification (`V`) — into executable accountability semantics: create an event, canonicalize it, hash it, chain it, archive it, replay it, and verify it across neutral profile adapters.
+`jep-runtime` is a runnable reference implementation for the Judgment Event Protocol (JEP). It turns the current JEP Internet-Draft primitives — Judgment (`J`), Delegation (`D`), Termination (`T`), and Verification (`V`) — into executable accountability semantics: create an event, canonicalize it, hash it, chain it, archive it, replay it, and verify it across neutral profile adapters.
 
 This repository is intentionally **not** an agent framework, workflow orchestrator, blockchain, consensus layer, payment executor, or production security system. Mock signatures and mock credential references are provided so protocol semantics can be tested before deployment-specific cryptography is plugged in.
-
-## Protocol version target
-
-This reference runtime is pinned to **JEP Internet-Draft v06** / the `jep-v06` repository baseline. The runtime exposes this as package metadata via `jep_runtime.JEP_DRAFT_VERSION == "jep-v06"` and includes the same value in conformance reports.
-
-The implementation intentionally preserves the v06 meanings of Judgment (`J`), Delegation (`D`), Termination (`T`), and Verification (`V`) events. Future draft revisions should be added as explicit schema/profile adapters or compatibility layers rather than silently changing the v06 runtime semantics.
 
 ## Architecture
 
@@ -134,5 +128,6 @@ tests/                  # executable conformance/runtime tests
 - Replace `MockProfileAdapter` with production credential adapters.
 - Add signature suites while preserving the canonicalization boundary.
 - Add draft-version-specific schema adapters without changing the pinned v06 J/D/T/V primitive meaning.
+- Add draft-version-specific schema adapters without changing J/D/T/V primitive meaning.
 - Publish conformance vectors for independent implementations.
 - Add governance-specific validation modules outside the core minimal runtime.

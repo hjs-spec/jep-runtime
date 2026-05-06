@@ -3,7 +3,6 @@ import json
 from jep_runtime.archive.jsonl import JSONLArchive
 from jep_runtime.canonicalization.json import canonicalize_event, compute_event_hash
 from jep_runtime.conformance.runtime import run_conformance
-from jep_runtime.core.version import JEP_DRAFT_VERSION
 from jep_runtime.core.event import EventType, JEPEvent
 from jep_runtime.delegation.runtime import delegate_authority, validate_scope
 from jep_runtime.events.factory import create_event
@@ -65,7 +64,5 @@ def test_archive_replay_verifies_full_chain(tmp_path):
 
 def test_conformance_suite_passes():
     report = run_conformance()
-    assert report["protocol_version"] == "jep-v06"
-    assert report["test_vectors"]["protocol_version"] == JEP_DRAFT_VERSION
     assert report["passed"]
     assert all(report["matrix"].values())
