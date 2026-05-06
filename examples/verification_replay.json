@@ -1,0 +1,6 @@
+{
+  "actor": "verifier:reference",
+  "subject": "agent:worker",
+  "event_type": "V",
+  "intent": {"verification": "replay hash chain and delegation lineage"}
+}

@@ -1,0 +1,99 @@
+{
+  "$id": "https://example.org/jep-runtime/schemas/jep-event.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authority_scope": {
+      "type": "object"
+    },
+    "credential_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "delegation_chain": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "event_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "enum": [
+        "J",
+        "D",
+        "T",
+        "V"
+      ]
+    },
+    "intent": {
+      "type": "object"
+    },
+    "justification": {
+      "type": "string"
+    },
+    "nonce": {
+      "type": "string"
+    },
+    "previous_event_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "integer"
+    },
+    "verification_state": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "actor",
+    "subject",
+    "agent_id",
+    "session_id",
+    "delegation_chain",
+    "authority_scope",
+    "intent",
+    "justification",
+    "previous_event_hash",
+    "event_hash",
+    "nonce",
+    "timestamp",
+    "profile",
+    "credential_reference",
+    "verification_state"
+  ],
+  "title": "JEP Reference Runtime Event",
+  "type": "object"
+}
