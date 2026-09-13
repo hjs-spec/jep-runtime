@@ -131,3 +131,7 @@ tests/                  # executable conformance/runtime tests
 - Add draft-version-specific schema adapters without changing J/D/T/V primitive meaning.
 - Publish conformance vectors for independent implementations.
 - Add governance-specific validation modules outside the core minimal runtime.
+
+## Runtime and verification notes
+
+See [HARDENING.md](HARDENING.md) for supported behavior, regression checks, and compatibility boundaries.

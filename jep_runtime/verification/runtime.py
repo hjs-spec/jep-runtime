@@ -15,17 +15,22 @@ from jep_runtime.profiles.adapter import MockProfileAdapter, ProfileAdapter
 class VerificationResult:
     valid: bool
     errors: tuple[str, ...] = ()
+    profile_checked: bool = False
 
 
 def verify_profile(event: JEPEvent, adapter: ProfileAdapter | None = None) -> VerificationResult:
+    if (adapter is None or isinstance(adapter, MockProfileAdapter)) and event.profile != "mock":
+        return VerificationResult(False, (f"no verifier configured for profile {event.profile}",))
     profile_adapter = adapter or MockProfileAdapter()
     if event.credential_reference is None:
-        return VerificationResult(True)
+        if event.profile == "mock":
+            return VerificationResult(True)
+        return VerificationResult(False, ("credential reference is required",))
     if not profile_adapter.verify_reference(event.credential_reference, event.profile):
         return VerificationResult(False, (f"invalid credential reference for profile {event.profile}",))
     if not profile_adapter.validate_authority(event.credential_reference, event.authority_scope):
         return VerificationResult(False, ("profile adapter rejected authority scope",))
-    return VerificationResult(True)
+    return VerificationResult(True, profile_checked=not isinstance(profile_adapter, MockProfileAdapter))
 
 
 def verify_event(event: JEPEvent, *, adapter: ProfileAdapter | None = None) -> VerificationResult:
@@ -34,11 +39,11 @@ def verify_event(event: JEPEvent, *, adapter: ProfileAdapter | None = None) -> V
         errors.append("event_hash mismatch")
     if not event.nonce:
         errors.append("missing nonce")
-    if not isinstance(event.timestamp, int):
+    if type(event.timestamp) is not int:
         errors.append("timestamp must be an integer")
     profile_result = verify_profile(event, adapter)
     errors.extend(profile_result.errors)
-    return VerificationResult(not errors, tuple(errors))
+    return VerificationResult(not errors, tuple(errors), profile_result.profile_checked)
 
 
 def verify_chain(events: Iterable[JEPEvent], *, adapter: ProfileAdapter | None = None) -> VerificationResult:
