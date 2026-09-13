@@ -7,6 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from jep_runtime.core.event import EventType, JEPEvent
 from jep_runtime.events.factory import create_event
+from jep_runtime.delegation.termination import TerminationState
 
 
 def _scope_items(scope: Mapping[str, Any]) -> dict[str, Any]:
@@ -62,6 +63,7 @@ def delegate_authority(
     agent_id: str | None,
     scope: Mapping[str, Any],
     justification: str = "",
+    credential_reference: str | None = None,
 ) -> JEPEvent:
     """Create a scoped delegation event from parent authority to a delegatee."""
 
@@ -82,7 +84,7 @@ def delegate_authority(
         justification=justification,
         previous_event_hash=parent_event.event_hash,
         profile=parent_event.profile,
-        credential_reference=parent_event.credential_reference,
+        credential_reference=credential_reference,
         timestamp=parent_event.timestamp + 1,
     )
 
@@ -95,7 +97,11 @@ def verify_delegation_chain(events: Iterable[JEPEvent]) -> tuple[bool, list[str]
     seen_hashes: set[str] = set()
     by_hash: dict[str, JEPEvent] = {}
     seen_ids: set[str] = set()
+    termination = TerminationState()
     for event in events:
+        if termination.rejects(event):
+            problems.append(f"use of terminated authority at {event.event_id}")
+        termination.observe(event)
         if event.event_id in seen_ids:
             problems.append(f"duplicate event id: {event.event_id}")
         seen_ids.add(event.event_id)

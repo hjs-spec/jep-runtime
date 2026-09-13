@@ -129,6 +129,18 @@ tests/                  # executable conformance/runtime tests
 
 ## Limitations
 
+The local reference profile binds every supplied credential to `event.actor`
+through `ProfileAdapter.resolve_identity`; lookup failures fail closed. Delegation
+helpers accept the delegating actor's `credential_reference` explicitly and never
+copy the parent actor's credential. Mock events without credentials remain mock.
+
+A `T` ends its subject's authority within that session, including observed
+descendant delegations. Later `J`/`D` use or re-grant in that session is rejected,
+and replay removes the revoked authority while retaining all evidence nodes.
+`V` evidence can still be recorded. A new session has independent termination
+state. This is a local runtime profile rule; deployment trust policy must still
+establish who may issue a grant or termination.
+
 - Signatures are mock/reference only.
 - Profile adapters do not verify real OAuth/OIDC, X509, DID/VC, or IAM credentials.
 - No blockchain, distributed consensus, real payment execution, or production key management is included.
