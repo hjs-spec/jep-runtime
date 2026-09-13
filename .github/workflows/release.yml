@@ -23,6 +23,7 @@ jobs:
       - run: pip install build twine pytest pytest-asyncio httpx -e .
       - run: python -m pytest tests -q
       - run: python -m build && twine check dist/*
+      - run: python scripts/check_coexistence.py dist/*.whl
       - name: Validate release version
         run: |
           python -c "import pathlib,re; v=pathlib.Path('VERSION').read_text().strip(); assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?',v)"
