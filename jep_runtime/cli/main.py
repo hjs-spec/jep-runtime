@@ -24,7 +24,7 @@ def _print(data: object) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="jep", description="JEP Reference Runtime CLI")
+    parser = argparse.ArgumentParser(prog="jep-runtime", description="JEP Reference Runtime CLI")
     sub = parser.add_subparsers(dest="command", required=True)
 
     create = sub.add_parser("create-event", help="Create and hash a J/D/T/V event")

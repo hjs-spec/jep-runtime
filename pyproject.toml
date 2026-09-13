@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jep-runtime"
-version = "0.1.1"
+version = "0.2.0"
 description = "Reference runtime for Judgment Event Protocol executable accountability semantics"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,7 +15,7 @@ keywords = ["JEP", "accountability", "protocol", "runtime", "verification"]
 classifiers = ["Programming Language :: Python :: 3", "Topic :: Security :: Cryptography"]
 
 [project.scripts]
-jep = "jep_runtime.cli.main:main"
+jep-runtime = "jep_runtime.cli.main:main"
 
 [tool.setuptools.packages.find]
 include = ["jep_runtime*"]

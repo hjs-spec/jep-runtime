@@ -4,6 +4,17 @@
 
 This repository is intentionally **not** an agent framework, workflow orchestrator, blockchain, consensus layer, payment executor, or production security system. Mock signatures and mock credential references are provided so protocol semantics can be tested before deployment-specific cryptography is plugged in.
 
+## Installation and CLI migration
+
+```sh
+python -m pip install --upgrade jep-runtime
+jep-runtime --help
+```
+
+Version 0.2 uses `jep-runtime`; `jep` remains owned by `jep-cli`. Python imports and existing local-runtime archives are unchanged. If version 0.1 shared an environment with `jep-cli`, upgrade this package first, then run `python -m pip install --force-reinstall jep-cli` to restore the previously shared executable.
+
+This runtime uses its own event envelope. For signed JEP-Core-0.6 wire events use [the SDK](https://github.com/hjs-spec/sdk-py) and [API](https://github.com/hjs-spec/jep-api); do not submit local-runtime envelope fields as core top-level fields.
+
 ## Architecture
 
 ```text
@@ -51,7 +62,7 @@ import events -> verify entire chain -> replay J/D/T/V semantics
 Run it with:
 
 ```bash
-jep replay archive.jsonl
+jep-runtime replay archive.jsonl
 ```
 
 The replay output is a portable event lineage graph plus authority and termination state. It is evidence reconstruction, not workflow execution.
@@ -59,16 +70,16 @@ The replay output is a portable event lineage graph plus authority and terminati
 ## CLI
 
 ```bash
-jep create-event --type J --actor human:alice --subject agent:planner \
+jep-runtime create-event --type J --actor human:alice --subject agent:planner \
   --agent-id agent:planner \
   --scope-json '{"actions":["read"],"resources":["repo:jep"]}' \
   --intent-json '{"task":"summarize JEP"}' \
   --archive archive.jsonl
 
-jep verify event.json
-jep archive-verify archive.jsonl
-jep replay archive.jsonl
-jep conformance-test
+jep-runtime verify event.json
+jep-runtime archive-verify archive.jsonl
+jep-runtime replay archive.jsonl
+jep-runtime conformance-test
 ```
 
 ## Conformance matrix
@@ -82,7 +93,7 @@ jep conformance-test
 | Profile compatibility | Neutral `ProfileAdapter` contract with mock OAuth/OIDC, X509, DID/VC, Local IAM labels |
 | Replay correctness | Archive replay must re-verify the full chain and emit lineage graph/state |
 
-`jep conformance-test` emits test vectors, mock signed vectors, and a compatibility report.
+`jep-runtime conformance-test` emits test vectors, mock signed vectors, and a compatibility report.
 
 ## Correspondence with the JEP draft
 
@@ -110,7 +121,7 @@ jep_runtime/
   archive/              # append-only JSONL archive runtime
   replay/               # lineage graph and termination replay
   conformance/          # conformance vectors and matrix
-  cli/                  # jep command line entry point
+  cli/                  # jep-runtime command line entry point
   schemas/              # generated JSON schema
 examples/               # example event scenarios
 tests/                  # executable conformance/runtime tests
