@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Reference runtime for Judgment Event Protocol executable accountability semantics"
 readme = "README.md"
 requires-python = ">=3.10"
+dependencies = ["filelock>=3.12"]
 authors = [{name = "JEP Runtime Contributors"}]
 license = {text = "MIT"}
 keywords = ["JEP", "accountability", "protocol", "runtime", "verification"]
