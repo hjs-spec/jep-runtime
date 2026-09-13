@@ -42,7 +42,7 @@ def generate_test_vectors() -> dict:
         timestamp=child.timestamp + 1,
         nonce="00000000-0000-4000-8000-000000000003",
         profile="mock",
-        credential_reference=ref,
+        credential_reference=adapter.issue_reference("verifier:local", "mock"),
     )
     return {
         "events": [root.to_dict(), child.to_dict(), verify.to_dict()],

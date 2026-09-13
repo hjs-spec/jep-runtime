@@ -26,10 +26,16 @@ def verify_profile(event: JEPEvent, adapter: ProfileAdapter | None = None) -> Ve
         if event.profile == "mock":
             return VerificationResult(True)
         return VerificationResult(False, ("credential reference is required",))
-    if not profile_adapter.verify_reference(event.credential_reference, event.profile):
-        return VerificationResult(False, (f"invalid credential reference for profile {event.profile}",))
-    if not profile_adapter.validate_authority(event.credential_reference, event.authority_scope):
-        return VerificationResult(False, ("profile adapter rejected authority scope",))
+    try:
+        if not profile_adapter.verify_reference(event.credential_reference, event.profile):
+            return VerificationResult(False, (f"invalid credential reference for profile {event.profile}",))
+        identity = profile_adapter.resolve_identity(event.credential_reference)
+        if not isinstance(identity, str) or not identity or identity != event.actor:
+            return VerificationResult(False, ("credential identity does not match event actor",))
+        if not profile_adapter.validate_authority(event.credential_reference, event.authority_scope):
+            return VerificationResult(False, ("profile adapter rejected authority scope",))
+    except Exception:
+        return VerificationResult(False, ("profile adapter could not verify credential",))
     return VerificationResult(True, profile_checked=not isinstance(profile_adapter, MockProfileAdapter))
 
 
@@ -51,8 +57,10 @@ def verify_chain(events: Iterable[JEPEvent], *, adapter: ProfileAdapter | None =
     materialized = list(events)
     nonces: set[str] = set()
     previous_hash: str | None = None
+    profile_checked = bool(materialized)
     for index, event in enumerate(materialized):
         result = verify_event(event, adapter=adapter)
+        profile_checked = profile_checked and result.profile_checked
         errors.extend(f"{event.event_id}: {error}" for error in result.errors)
         if event.nonce in nonces:
             errors.append(f"{event.event_id}: duplicate nonce")
@@ -66,7 +74,7 @@ def verify_chain(events: Iterable[JEPEvent], *, adapter: ProfileAdapter | None =
     ok, delegation_errors = verify_delegation_chain(materialized)
     if not ok:
         errors.extend(delegation_errors)
-    return VerificationResult(not errors, tuple(errors))
+    return VerificationResult(not errors, tuple(errors), profile_checked)
 
 
 def detect_tampering(events: Iterable[JEPEvent]) -> list[str]:
