@@ -1,5 +1,14 @@
 # JEP Runtime — local companion experiment
 
+> **Maintenance: retired experiment — 2026-09-26.** Active feature development
+> has ended. Source history, releases, examples and existing archive readers are
+> retained for reproduction. Package names and historical formats are unchanged.
+
+The local envelope, mock signatures, profile rules and replay command remain available here. They are separate from signed Core 0.7 events; existing archives require this historical runtime.
+
+For new signed Core integrations, use the [maintained recording and report path](https://github.com/hjs-spec/jep-agent-sdk/blob/main/docs/INTEGRATIONS.md).
+See the [repository directory](https://github.com/hjs-spec/.github/blob/main/PROJECTS.md#retired-experiments) for maintenance status. No automatic archive migration is provided.
+
 Create, archive and replay a **local runtime envelope** with declared delegation and termination rules. This package uses J/D/T/V vocabulary, normalized sorted JSON and mock signatures. It does not implement the current signed Core wire format.
 
 For signed Core 0.7 events, use [Quickstart](https://github.com/hjs-spec/jep-quickstart), the [HTTP SDK/API](https://github.com/hjs-spec/.github/blob/main/PROJECTS.md#integrate), or the [local Agent SDK](https://github.com/hjs-spec/jep-agent-sdk).
