@@ -1,4 +1,4 @@
-# Release 0.3.0
+# Release 0.3.1
 
 Align the reference runtime boundary with JEP Core 0.7.
 
