@@ -13,7 +13,7 @@ jep-runtime --help
 
 Version 0.2 uses `jep-runtime`; `jep` remains owned by `jep-cli`. Python imports and existing local-runtime archives are unchanged. If version 0.1 shared an environment with `jep-cli`, upgrade this package first, then run `python -m pip install --force-reinstall jep-cli` to restore the previously shared executable.
 
-This runtime uses its own event envelope. For signed JEP-Core-0.6 wire events use [the SDK](https://github.com/hjs-spec/sdk-py) and [API](https://github.com/hjs-spec/jep-api); do not submit local-runtime envelope fields as core top-level fields.
+This runtime uses its own companion runtime envelope. For signed JEP Core 0.7 wire events use [the SDK](https://github.com/hjs-spec/sdk-py) and [API](https://github.com/hjs-spec/jep-api). Runtime-only fields such as `nonce`, `previous_event_hash`, `delegation_chain`, `authority_scope`, and `verification_state` are profile/runtime state and MUST NOT be presented as JEP Core top-level requirements.
 
 ## Architecture
 
@@ -38,13 +38,13 @@ This runtime uses its own event envelope. For signed JEP-Core-0.6 wire events us
 
 ## Runtime data flow
 
-1. A caller creates a `JEPEvent` with the required core fields.
+1. A caller creates a local runtime `JEPEvent` envelope. This envelope is not the JEP Core wire object.
 2. The event is canonicalized as normalized UTF-8 JSON with stable field ordering and no insignificant whitespace.
 3. `event_hash = SHA256(canonical_event_without_event_hash)` is assigned once; changing a hashed event requires creating a new event.
 4. New events reference `previous_event_hash`, producing an append-only event chain.
 5. Delegation events carry bounded `authority_scope` and `delegation_chain` entries so authority lineage can be replayed.
 6. JSONL archives append one canonical event record per line.
-7. Verification recomputes hashes, validates nonce uniqueness, checks hash continuity, validates delegation scope, and invokes the configured neutral profile adapter.
+7. Verification recomputes hashes and applies runtime-profile checks such as nonce uniqueness, hash continuity, delegation scope, and profile identity. These are companion runtime rules, not intrinsic JEP Core checks.
 
 ## Replay flow
 
@@ -103,8 +103,8 @@ jep-runtime conformance-test
 | `D` Delegation | `delegate_authority()`, scoped delegation events, `verify_delegation_chain()` |
 | `T` Termination | `EventType.TERMINATION`, replayed into `termination_state` |
 | `V` Verification | `verify_event()`, `verify_chain()`, `verify_replay()`, verification events |
-| Replay protection | Required `nonce` and duplicate nonce validation |
-| Signed/verifiable event format | Immutable hashed event model plus mock profile references |
+| Runtime replay profile | Runtime-envelope `nonce` and duplicate nonce validation; not a JEP Core requirement |
+| Core relation | Companion runtime envelope; use JEP SDK/API for JEP Core 0.7 wire events |
 | Optional profiles | `ProfileAdapter` interface; provider-neutral mock adapter |
 | Append-only receipts | JSONL archive with chain verification on replay |
 
@@ -144,14 +144,13 @@ establish who may issue a grant or termination.
 - Signatures are mock/reference only.
 - Profile adapters do not verify real OAuth/OIDC, X509, DID/VC, or IAM credentials.
 - No blockchain, distributed consensus, real payment execution, or production key management is included.
-- The runtime enforces executable protocol invariants, not legal liability, governance policy, or workflow lifecycle orchestration.
+- The runtime enforces its declared companion-profile/runtime invariants. JEP Core itself does not define this runtime's authority graph, termination cascade, hash-chain, or nonce state. The runtime does not determine legal liability, governance policy, factual truth, or external effect.
 
 ## Runtime governance extension points
 
 - Replace `MockProfileAdapter` with production credential adapters.
 - Add signature suites while preserving the canonicalization boundary.
-- Add draft-version-specific schema adapters without changing the pinned v06 J/D/T/V primitive meaning.
-- Add draft-version-specific schema adapters without changing J/D/T/V primitive meaning.
+- Add explicit wire adapters for JEP Core revisions without redefining Core J/D/T/V semantics.
 - Publish conformance vectors for independent implementations.
 - Add governance-specific validation modules outside the core minimal runtime.
 
