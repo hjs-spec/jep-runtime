@@ -61,9 +61,11 @@ def _thaw(value: Any) -> Any:
 class JEPEvent:
     """Immutable JEP event after hash assignment.
 
-    The runtime keeps J/D/T/V semantics minimal: events are typed evidence
-    records, linked by previous_event_hash, scoped by authority_scope, and
-    replayable through nonce, timestamp, profile, and delegation_chain.
+    This class is the runtime's historical internal archive/replay envelope,
+    not the JEP Core 0.7 wire object. Runtime fields such as nonce,
+    previous_event_hash, delegation_chain, authority_scope, and
+    verification_state are profile/runtime state and MUST NOT be interpreted
+    as required JEP Core fields. See core.wire07 for the Core 0.7 boundary.
     """
 
     event_id: str
