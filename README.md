@@ -1,159 +1,63 @@
-# JEP Reference Runtime
+# JEP Runtime — local companion experiment
 
-`jep-runtime` is a runnable reference implementation for the Judgment Event Protocol (JEP). It turns the current JEP Internet-Draft primitives — Judgment (`J`), Delegation (`D`), Termination (`T`), and Verification (`V`) — into executable accountability semantics: create an event, canonicalize it, hash it, chain it, archive it, replay it, and verify it across neutral profile adapters.
+Create, archive and replay a **local runtime envelope** with declared delegation and termination rules. This package uses J/D/T/V vocabulary, normalized sorted JSON and mock signatures. It does not implement the current signed Core wire format.
 
-This repository is intentionally **not** an agent framework, workflow orchestrator, blockchain, consensus layer, payment executor, or production security system. Mock signatures and mock credential references are provided so protocol semantics can be tested before deployment-specific cryptography is plugged in.
+For signed Core 0.7 events, use [Quickstart](https://github.com/hjs-spec/jep-quickstart), the [HTTP SDK/API](https://github.com/hjs-spec/.github/blob/main/PROJECTS.md#integrate), or the [local Agent SDK](https://github.com/hjs-spec/jep-agent-sdk).
 
-## Installation and CLI migration
+## Install
 
 ```sh
 python -m pip install --upgrade jep-runtime
 jep-runtime --help
 ```
 
-Version 0.2 uses `jep-runtime`; `jep` remains owned by `jep-cli`. Python imports and existing local-runtime archives are unchanged. If version 0.1 shared an environment with `jep-cli`, upgrade this package first, then run `python -m pip install --force-reinstall jep-cli` to restore the previously shared executable.
+Since software 0.2 the command is `jep-runtime`; `jep` belongs to `jep-cli`. If 0.1 shared an environment with that CLI, upgrade this package first, then reinstall `jep-cli` to restore its command. Python imports and existing local-runtime archives remain unchanged.
 
-This runtime uses its own companion runtime envelope. For signed JEP Core 0.7 wire events use [the SDK](https://github.com/hjs-spec/sdk-py) and [API](https://github.com/hjs-spec/jep-api). Runtime-only fields such as `nonce`, `previous_event_hash`, `delegation_chain`, `authority_scope`, and `verification_state` are profile/runtime state and MUST NOT be presented as JEP Core top-level requirements.
+## Use
 
-## Architecture
-
-```text
-+-------------------+      +------------------------+      +------------------+
-| Event Runtime     | ---> | Canonicalization       | ---> | SHA-256 Hashing  |
-| J / D / T / V     |      | UTF-8 sorted JSON      |      | event_hash       |
-+---------+---------+      +-----------+------------+      +---------+--------+
-          |                            |                             |
-          v                            v                             v
-+-------------------+      +------------------------+      +------------------+
-| Delegation        | ---> | Append-only Archive    | ---> | Verification     |
-| scoped authority  |      | JSONL import/export    |      | chain/replay     |
-+---------+---------+      +-----------+------------+      +---------+--------+
-          |                            |                             |
-          v                            v                             v
-+-------------------+      +------------------------+      +------------------+
-| Profile Adapters  | ---> | Replay Engine          | ---> | Conformance      |
-| OAuth/X509/DID/IAM|      | lineage graph/state    |      | vectors/report   |
-+-------------------+      +------------------------+      +------------------+
-```
-
-## Runtime data flow
-
-1. A caller creates a local runtime `JEPEvent` envelope. This envelope is not the JEP Core wire object.
-2. The event is canonicalized as normalized UTF-8 JSON with stable field ordering and no insignificant whitespace.
-3. `event_hash = SHA256(canonical_event_without_event_hash)` is assigned once; changing a hashed event requires creating a new event.
-4. New events reference `previous_event_hash`, producing an append-only event chain.
-5. Delegation events carry bounded `authority_scope` and `delegation_chain` entries so authority lineage can be replayed.
-6. JSONL archives append one canonical event record per line.
-7. Verification recomputes hashes and applies runtime-profile checks such as nonce uniqueness, hash continuity, delegation scope, and profile identity. These are companion runtime rules, not intrinsic JEP Core checks.
-
-## Replay flow
-
-```text
-archive.jsonl
-   |
-   v
-import events -> verify entire chain -> replay J/D/T/V semantics
-   |                  |                    |
-   |                  |                    +--> termination_state
-   |                  +--> tamper/nonce/profile/delegation errors
-   +--> lineage_graph: hash-chain edges + delegation edges
-```
-
-Run it with:
-
-```bash
-jep-runtime replay archive.jsonl
-```
-
-The replay output is a portable event lineage graph plus authority and termination state. It is evidence reconstruction, not workflow execution.
-
-## CLI
-
-```bash
+```sh
 jep-runtime create-event --type J --actor human:alice --subject agent:planner \
   --agent-id agent:planner \
   --scope-json '{"actions":["read"],"resources":["repo:jep"]}' \
   --intent-json '{"task":"summarize JEP"}' \
   --archive archive.jsonl
 
-jep-runtime verify event.json
 jep-runtime archive-verify archive.jsonl
 jep-runtime replay archive.jsonl
 jep-runtime conformance-test
 ```
 
-## Conformance matrix
+`verify event.json` checks one runtime envelope. `conformance-test` checks this runtime's own profile, not JEP Core conformance. Replay reconstructs recorded state; it does not re-execute tools.
 
-| Capability | Runtime check |
-| --- | --- |
-| Canonicalization | Stable UTF-8 JSON with sorted keys and normalized strings |
-| Deterministic hashing | SHA-256 over canonical event without `event_hash` |
-| Delegation semantics | Parent/child scope and expiration checks |
-| Verification semantics | Hash, nonce, timestamp, profile, and chain integrity checks |
-| Profile compatibility | Neutral `ProfileAdapter` contract with mock OAuth/OIDC, X509, DID/VC, Local IAM labels |
-| Replay correctness | Archive replay must re-verify the full chain and emit lineage graph/state |
+## Data contract
 
-`jep-runtime conformance-test` emits test vectors, mock signed vectors, and a compatibility report.
+| Step | Local behavior |
+|---|---|
+| Create | Build a runtime `JEPEvent`, not a Core wire object |
+| Hash | SHA-256 of normalized/sorted JSON excluding `event_hash`; not Core JCS |
+| Link | `previous_event_hash` links supplied records |
+| Delegate | Record `authority_scope` and `delegation_chain` |
+| Archive | Append JSONL records |
+| Verify/replay | Check local hashes, nonce uniqueness, links, delegation rules and supplied profile identity |
 
-## Correspondence with the JEP draft
+Fields such as `nonce`, `previous_event_hash`, `delegation_chain`, `authority_scope` and `verification_state` are local state. They are not mandatory Core fields. Existing archives keep their serialization; a future Core adapter must explicitly map formats and preserve original evidence.
 
-| Draft primitive / concept | Runtime implementation |
-| --- | --- |
-| `J` Judgment | `EventType.JUDGMENT` and `create_event("J", ...)` |
-| `D` Delegation | `delegate_authority()`, scoped delegation events, `verify_delegation_chain()` |
-| `T` Termination | `EventType.TERMINATION`, replayed into `termination_state` |
-| `V` Verification | `verify_event()`, `verify_chain()`, `verify_replay()`, verification events |
-| Runtime replay profile | Runtime-envelope `nonce` and duplicate nonce validation; not a JEP Core requirement |
-| Core relation | Companion runtime envelope; use JEP SDK/API for JEP Core 0.7 wire events |
-| Optional profiles | `ProfileAdapter` interface; provider-neutral mock adapter |
-| Append-only receipts | JSONL archive with chain verification on replay |
+## Policy boundary
 
-## Repository structure
+The local profile binds a supplied credential reference to `event.actor` through `ProfileAdapter.resolve_identity`; lookup failures fail closed. Delegation helpers take the delegating actor's credential reference rather than copying a parent's credential.
 
-```text
-jep_runtime/
-  core/                 # immutable event model and JSON schema generation
-  events/               # event factories
-  canonicalization/     # deterministic JSON + SHA-256 hashing
-  delegation/           # authority propagation and scope validation
-  verification/         # event, chain, replay, tamper, profile verification
-  profiles/             # provider-neutral profile adapter interface and mock adapter
-  archive/              # append-only JSONL archive runtime
-  replay/               # lineage graph and termination replay
-  conformance/          # conformance vectors and matrix
-  cli/                  # jep-runtime command line entry point
-  schemas/              # generated JSON schema
-examples/               # example event scenarios
-tests/                  # executable conformance/runtime tests
-```
+Within a session, this profile treats `T` as ending a subject's authority, including observed descendant delegations. Later use or re-grant is rejected; `V` evidence may still be recorded. A new session has independent state. These are local rules. Deployment policy must independently establish who may grant or terminate authority.
 
-## Limitations
+Signatures and OAuth/OIDC, X509, DID/VC and IAM adapters are mock/reference implementations. Hash consistency does not authenticate a signer or prove a complete history, and declared scope does not establish real-world authority.
 
-The local reference profile binds every supplied credential to `event.actor`
-through `ProfileAdapter.resolve_identity`; lookup failures fail closed. Delegation
-helpers accept the delegating actor's `credential_reference` explicitly and never
-copy the parent actor's credential. Mock events without credentials remain mock.
+## Source map
 
-A `T` ends its subject's authority within that session, including observed
-descendant delegations. Later `J`/`D` use or re-grant in that session is rejected,
-and replay removes the revoked authority while retaining all evidence nodes.
-`V` evidence can still be recorded. A new session has independent termination
-state. This is a local runtime profile rule; deployment trust policy must still
-establish who may issue a grant or termination.
+| Directory | Responsibility |
+|---|---|
+| `jep_runtime/core`, `events`, `schemas` | Local envelope and factories |
+| `canonicalization`, `verification` under `jep_runtime` | Local encoding, hashing and checks |
+| `delegation`, `profiles` under `jep_runtime` | Local policy and mock identity adapters |
+| `archive`, `replay`, `conformance`, `cli` under `jep_runtime` | Storage, replay, profile checks and command |
+| `examples`, `tests` | Scenarios and regression checks |
 
-- Signatures are mock/reference only.
-- Profile adapters do not verify real OAuth/OIDC, X509, DID/VC, or IAM credentials.
-- No blockchain, distributed consensus, real payment execution, or production key management is included.
-- The runtime enforces its declared companion-profile/runtime invariants. JEP Core itself does not define this runtime's authority graph, termination cascade, hash-chain, or nonce state. The runtime does not determine legal liability, governance policy, factual truth, or external effect.
-
-## Runtime governance extension points
-
-- Replace `MockProfileAdapter` with production credential adapters.
-- Add signature suites while preserving the canonicalization boundary.
-- Add explicit wire adapters for JEP Core revisions without redefining Core J/D/T/V semantics.
-- Publish conformance vectors for independent implementations.
-- Add governance-specific validation modules outside the core minimal runtime.
-
-## Runtime and verification notes
-
-See [HARDENING.md](HARDENING.md) for supported behavior, regression checks, and compatibility boundaries.
+See [HARDENING.md](HARDENING.md) for implementation limits and [the ecosystem format matrix](https://github.com/hjs-spec/jep-core/blob/main/docs/architecture/architecture-notes.md#format-and-verification-matrix) before combining packages.
