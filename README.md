@@ -13,7 +13,7 @@ jep-runtime --help
 
 Version 0.2 uses `jep-runtime`; `jep` remains owned by `jep-cli`. Python imports and existing local-runtime archives are unchanged. If version 0.1 shared an environment with `jep-cli`, upgrade this package first, then run `python -m pip install --force-reinstall jep-cli` to restore the previously shared executable.
 
-This runtime uses its own event envelope. For signed JEP-Core-0.6 wire events use [the SDK](https://github.com/hjs-spec/sdk-py) and [API](https://github.com/hjs-spec/jep-api); do not submit local-runtime envelope fields as core top-level fields.
+This runtime retains a historical internal archive/replay envelope. It is **not** the JEP Core 0.7 wire object. For signed Core 0.7 wire events use [the SDK](https://github.com/hjs-spec/sdk-py) and [API](https://github.com/hjs-spec/jep-api). The module `jep_runtime.core.wire07` exposes the Core 0.7 minimum structural boundary. Runtime fields such as `nonce`, `previous_event_hash`, `delegation_chain`, `authority_scope`, and `verification_state` are runtime/profile state and are not required Core fields.
 
 ## Architecture
 
@@ -44,7 +44,7 @@ This runtime uses its own event envelope. For signed JEP-Core-0.6 wire events us
 4. New events reference `previous_event_hash`, producing an append-only event chain.
 5. Delegation events carry bounded `authority_scope` and `delegation_chain` entries so authority lineage can be replayed.
 6. JSONL archives append one canonical event record per line.
-7. Verification recomputes hashes, validates nonce uniqueness, checks hash continuity, validates delegation scope, and invokes the configured neutral profile adapter.
+7. Runtime verification recomputes internal-envelope hashes, may validate profile/runtime nonce uniqueness, checks internal hash continuity, validates delegation scope, and invokes the configured profile adapter. These are runtime/chain behaviors, not JEP Core validation requirements.
 
 ## Replay flow
 
@@ -89,7 +89,7 @@ jep-runtime conformance-test
 | Canonicalization | Stable UTF-8 JSON with sorted keys and normalized strings |
 | Deterministic hashing | SHA-256 over canonical event without `event_hash` |
 | Delegation semantics | Parent/child scope and expiration checks |
-| Verification semantics | Hash, nonce, timestamp, profile, and chain integrity checks |
+| Runtime verification | Internal envelope hash, optional/profile nonce state, profile checks, and runtime chain integrity |
 | Profile compatibility | Neutral `ProfileAdapter` contract with mock OAuth/OIDC, X509, DID/VC, Local IAM labels |
 | Replay correctness | Archive replay must re-verify the full chain and emit lineage graph/state |
 
@@ -103,7 +103,7 @@ jep-runtime conformance-test
 | `D` Delegation | `delegate_authority()`, scoped delegation events, `verify_delegation_chain()` |
 | `T` Termination | `EventType.TERMINATION`, replayed into `termination_state` |
 | `V` Verification | `verify_event()`, `verify_chain()`, `verify_replay()`, verification events |
-| Replay protection | Required `nonce` and duplicate nonce validation |
+| Core safe retry | Stable Event Identity and idempotent acceptance belong to JEP Core 0.7; the internal runtime envelope may additionally use nonce/profile state |
 | Signed/verifiable event format | Immutable hashed event model plus mock profile references |
 | Optional profiles | `ProfileAdapter` interface; provider-neutral mock adapter |
 | Append-only receipts | JSONL archive with chain verification on replay |
